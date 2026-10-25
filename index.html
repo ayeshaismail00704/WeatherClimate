@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Web GIS weather explorer for Islamabad and Rawalpindi.">
+  <title>Weather & Climate Explorer | Islamabad & Rawalpindi</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://api.open-meteo.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Weather Explorer home">
+      <span class="brand-icon">☀</span><span>Weather<span class="brand-light">Explorer</span></span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#map-section">Live Map</a>
+      <a href="#forecast-section">Forecast</a>
+      <a href="#about">About</a>
+    </nav>
+    <span class="live-pill"><span class="live-dot"></span> Live weather</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">WEB GIS · REMOTE SENSING & GIS</p>
+        <h1>Weather, mapped<br><span>for your world.</span></h1>
+        <p class="hero-description">Explore current weather and a five-day forecast across Islamabad and Rawalpindi with an interactive geographic view.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#map-section">Explore the map <span aria-hidden="true">↗</span></a>
+          <button class="button button-ghost" id="hero-refresh" type="button">↻ Refresh data</button>
+        </div>
+        <div class="hero-note"><span>⌖</span> Potohar Plateau, Pakistan <span class="note-divider">·</span> Data updates when refreshed</div>
+      </div>
+      <div class="hero-visual" aria-label="Decorative weather illustration">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="sun">☀</div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+        <div class="floating-card floating-temp"><span class="mini-icon">🌤️</span><div><small>Current conditions</small><strong id="hero-temp">--°C</strong></div></div>
+        <div class="floating-card floating-location"><span class="pin">⌖</span><div><small>Selected location</small><strong id="hero-location">Islamabad</strong></div></div>
+      </div>
+    </section>
+
+    <section class="content-section" id="dashboard">
+      <div class="section-heading">
+        <div><p class="eyebrow">AT A GLANCE</p><h2>Weather dashboard</h2><p class="section-subtitle">Live conditions for your selected location.</p></div>
+        <div class="toolbar">
+          <label class="sr-only" for="location-select">Choose location</label>
+          <select id="location-select" aria-label="Choose location">
+            <option value="f6">F-6, Islamabad</option>
+            <option value="f7">F-7, Islamabad</option>
+            <option value="blue">Blue Area, Islamabad</option>
+            <option value="g9">G-9, Islamabad</option>
+            <option value="saddar">Saddar, Rawalpindi</option>
+            <option value="bahria">Bahria Town, Rawalpindi</option>
+          </select>
+          <button class="icon-button" id="refresh-button" type="button" title="Refresh weather" aria-label="Refresh weather">↻</button>
+        </div>
+      </div>
+      <div class="status-line" id="status-message" role="status">Connecting to weather service…</div>
+      <div class="weather-grid">
+        <article class="weather-card temperature-card"><div class="card-top"><span>Temperature</span><span class="card-icon">🌡️</span></div><div class="metric"><span id="temperature">--</span><small>°C</small></div><p id="weather-description">Waiting for weather data</p><div class="card-foot">Feels like a local snapshot</div></article>
+        <article class="weather-card"><div class="card-top"><span>Humidity</span><span class="card-icon">💧</span></div><div class="metric"><span id="humidity">--</span><small>%</small></div><p>Relative humidity</p><div class="progress-track"><div class="progress-fill" id="humidity-bar"></div></div></article>
+        <article class="weather-card"><div class="card-top"><span>Wind speed</span><span class="card-icon">🌬️</span></div><div class="metric"><span id="wind">--</span><small>km/h</small></div><p>Near-surface wind</p><div class="card-foot">10 m above ground</div></article>
+        <article class="weather-card"><div class="card-top"><span>Rain chance</span><span class="card-icon">🌧️</span></div><div class="metric"><span id="rain">--</span><small>%</small></div><p>Current hour precipitation probability</p><div class="card-foot">Forecast-based estimate</div></article>
+      </div>
+      <p class="updated-line">Last successful update: <strong id="updated-at">Not loaded yet</strong></p>
+    </section>
+
+    <section class="content-section map-layout" id="map-section">
+      <div class="map-panel">
+        <div class="section-heading map-heading"><div><p class="eyebrow">GEOGRAPHIC VIEW</p><h2>Explore the region</h2><p class="section-subtitle">Select a marker to view its weather snapshot.</p></div></div>
+        <div class="map-controls">
+          <label for="area-filter">Show locations</label>
+          <select id="area-filter"><option value="all">All locations</option><option value="Islamabad">Islamabad only</option><option value="Rawalpindi">Rawalpindi only</option></select>
+          <span class="map-legend"><i class="legend-dot islamabad-dot"></i> Islamabad <i class="legend-dot rawalpindi-dot"></i> Rawalpindi</span>
+        </div>
+        <div id="map" role="application" aria-label="Interactive map of Islamabad and Rawalpindi"><div class="map-fallback">The map is loading. An internet connection is required for map tiles.</div></div>
+        <p class="map-attribution">Map tiles © OpenStreetMap contributors · Map powered by Leaflet</p>
+      </div>
+      <aside class="location-panel">
+        <p class="eyebrow">LOCATION FINDER</p><h3>Find a place</h3><p class="section-subtitle">Search the supported study locations.</p>
+        <label class="search-box"><span aria-hidden="true">⌕</span><input id="location-search" type="search" placeholder="Search locations…" autocomplete="off"></label>
+        <div id="location-list" class="location-list"></div>
+        <div class="study-note"><span>✦</span><div><strong>Study area</strong><p>Islamabad Capital Territory and adjoining Rawalpindi, Punjab, Pakistan.</p></div></div>
+      </aside>
+    </section>
+
+    <section class="content-section" id="forecast-section">
+      <div class="section-heading"><div><p class="eyebrow">PLAN AHEAD</p><h2>Five-day forecast</h2><p class="section-subtitle">Daily high and low temperatures for the selected location.</p></div><span class="forecast-badge">Open-Meteo forecast</span></div>
+      <div class="forecast-grid" id="forecast-grid"><div class="forecast-placeholder">Forecast will appear when weather data loads.</div></div>
+      <p class="data-note">Forecast values are estimates from the weather provider and may change. This educational project is not intended for emergency decisions.</p>
+    </section>
+
+    <section class="about-section" id="about">
+      <div class="about-copy"><p class="eyebrow">ABOUT THIS PROJECT</p><h2>Geography meets<br>everyday weather.</h2><p>This educational Web GIS project combines location-based weather data with an interactive map. It demonstrates how web mapping, API requests, JSON parsing, and geographic coordinates can turn data into useful information.</p></div>
+      <div class="tech-grid"><div class="tech-item"><span>⌘</span><strong>HTML · CSS · JS</strong><small>Website structure and interactions</small></div><div class="tech-item"><span>◎</span><strong>Leaflet + OSM</strong><small>Interactive mapping</small></div><div class="tech-item"><span>↯</span><strong>Open-Meteo API</strong><small>Weather and forecast data</small></div><div class="tech-item"><span>{ }</span><strong>JSON parsing</strong><small>Structured API responses</small></div></div>
+    </section>
+  </main>
+
+  <footer><a class="brand footer-brand" href="#"><span class="brand-icon">☀</span><span>Weather<span class="brand-light">Explorer</span></span></a><p>University Web GIS project · Islamabad & Rawalpindi</p><p>Weather data: Open-Meteo · Map data: © OpenStreetMap contributors</p></footer>
+</body>
+</html>
